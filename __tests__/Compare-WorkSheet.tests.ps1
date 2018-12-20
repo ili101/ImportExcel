@@ -52,7 +52,13 @@ Describe "Compare Worksheet" {
         BeforeAll {
             $useGrid =  ($PSVersionTable.PSVersion.Major -LE 5)
             $null = Compare-WorkSheet "$env:temp\Server1.xlsx" "$env:temp\Server2.xlsx" -BackgroundColor ([System.Drawing.Color]::LightGreen) -GridView:$useGrid
-            if ($useGrid) {Start-Sleep -sec 5; [System.Windows.Forms.SendKeys]::Sendwait("%{F4}") }
+            if ($useGrid)
+            {
+                Start-Sleep -sec 5
+                #[System.Windows.Forms.SendKeys]::Sendwait("%{F4}")
+                $Process = Get-Process -Id $PID
+                $Process.CloseMainWindow()
+            }
             $xl1  = Open-ExcelPackage -Path "$env:temp\Server1.xlsx"
             $xl2  = Open-ExcelPackage -Path "$env:temp\Server2.xlsx"
             $s1Sheet = $xl1.Workbook.Worksheets[1]
