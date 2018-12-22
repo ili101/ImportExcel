@@ -53,7 +53,9 @@ Describe "Compare Worksheet" {
             $useGrid =  ($PSVersionTable.PSVersion.Major -LE 5)
             if ($useGrid) {
                 $ModulePath = (Get-Command -Name 'Compare-WorkSheet').Module.Path
-                . (Get-Process -Id $PID).Path ("Import-Module $ModulePath; " + '$null = Compare-WorkSheet "$env:temp\Server1.xlsx" "$env:temp\Server2.xlsx" -BackgroundColor ([System.Drawing.Color]::LightGreen) -GridView; Start-Sleep -sec 5')
+                $PowerShellExec = if ($PSEdition -eq 'Core') {'pwsh.exe'} else {'powershell.exe'}
+                $PowerShellPath = Join-Path -Path $PSHOME -ChildPath $PowerShellExec
+                . $PowerShellPath -Command ("Import-Module $ModulePath; " + '$null = Compare-WorkSheet "$env:temp\Server1.xlsx" "$env:temp\Server2.xlsx" -BackgroundColor ([System.Drawing.Color]::LightGreen) -GridView; Start-Sleep -sec 5')
             }
             else {
                 $null = Compare-WorkSheet "$env:temp\Server1.xlsx" "$env:temp\Server2.xlsx" -BackgroundColor ([System.Drawing.Color]::LightGreen) -GridView:$useGrid
