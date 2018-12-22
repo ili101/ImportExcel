@@ -51,13 +51,12 @@ Describe "Compare Worksheet" {
     Context "Setting the background to highlight different rows, use of grid view." {
         BeforeAll {
             $useGrid =  ($PSVersionTable.PSVersion.Major -LE 5)
-            $null = Compare-WorkSheet "$env:temp\Server1.xlsx" "$env:temp\Server2.xlsx" -BackgroundColor ([System.Drawing.Color]::LightGreen) -GridView:$useGrid
-            if ($useGrid)
-            {
-                Start-Sleep -sec 5
-                #[System.Windows.Forms.SendKeys]::Sendwait("%{F4}")
-                $Process = Get-Process -Id $PID
-                $Process.CloseMainWindow()
+            if ($useGrid) {
+                $ModulePath = (Get-Command -Name 'Compare-WorkSheet').Module.Path
+                . (Get-Process -Id $PID).Path ("Import-Module $ModulePath; " + '$null = Compare-WorkSheet "$env:temp\Server1.xlsx" "$env:temp\Server2.xlsx" -BackgroundColor ([System.Drawing.Color]::LightGreen) -GridView; Start-Sleep -sec 5')
+            }
+            else {
+                $null = Compare-WorkSheet "$env:temp\Server1.xlsx" "$env:temp\Server2.xlsx" -BackgroundColor ([System.Drawing.Color]::LightGreen) -GridView:$useGrid
             }
             $xl1  = Open-ExcelPackage -Path "$env:temp\Server1.xlsx"
             $xl2  = Open-ExcelPackage -Path "$env:temp\Server2.xlsx"
