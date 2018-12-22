@@ -26,3 +26,10 @@ Describe "Check if Function aliases exist" {
     }
 
 }
+
+Describe 'Check if Get Help works' {
+    it 'New-Plot' {
+        #Get-Help : Unable to find type [PSPlot].
+        {Help New-Plot} | Should -Not -Throw
+    }
+}

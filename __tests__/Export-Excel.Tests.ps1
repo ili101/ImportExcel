@@ -643,13 +643,13 @@ Describe ExportExcel {
         $warnvar = $null
         #Test create two data pages; as part of adding the second give both their own pivot table, test -autosize switch
         Get-Service | Select-Object    -Property Status, Name, DisplayName, StartType, CanPauseAndContinue | Export-Excel -Path $path  -AutoSize                         -TableName "All Services"  -TableStyle Medium1 -WarningAction SilentlyContinue -WarningVariable warnvar
-        Get-Process | Select-Object    -Property Name, Company, Handles, CPU, VM      | Export-Excel -Path $path  -AutoSize -WorkSheetname 'sheet2' -TableName "Processes"     -TableStyle Light1 -Title "Processes" -TitleFillPattern Solid -TitleBackgroundColor ([System.Drawing.Color]::AliceBlue) -TitleBold -TitleSize 22 -PivotTableDefinition $ptDef
+        Get-Process | Select-Object    -Property Name, Company, Handles, CPU, VM      | Export-Excel -Path $path  -AutoSizeFirst 10 -WorkSheetname 'sheet2' -TableName "Processes"     -TableStyle Light1 -Title "Processes" -TitleFillPattern Solid -TitleBackgroundColor ([System.Drawing.Color]::AliceBlue) -TitleBold -TitleSize 22 -PivotTableDefinition $ptDef
         $Excel = Open-ExcelPackage   $path
         $ws1 = $Excel.Workbook.Worksheets["Sheet1"]
         $ws2 = $Excel.Workbook.Worksheets["Sheet2"]
 
 
-        it "Set Column widths (with autosize)                                                      " {
+        it "Set Column widths (with AutoSize and AutoSizeFirst)                                                      " {
             $ws1.Column(2).Width                                        | Should not be $ws1.DefaultColWidth
             $ws2.Column(1).width                                        | Should not be $ws2.DefaultColWidth
         }
@@ -957,21 +957,153 @@ Describe ExportExcel {
           Sort-Object -Property size -Descending | Select-Object -First 10 |
             Export-Excel -Path $path -TableName ExtCount -Title "Biggest extensions"  -TitleSize 11 -StartColumn 4 -AutoSize
 
+        $r.extension | Group-Object | Sort-Object -Property count -Descending | Select-Object -First 5 Name, Count   |
+            Export-Excel -Path $path -Table -Title 'Table1' -TitleSize 11 -StartColumn 10
+
+        $r.extension | Group-Object | Sort-Object -Property count -Descending | Select-Object -First 7 Name, Count   |
+            Export-Excel -Path $path -TableStyle Medium5 -Title 'Table2' -TitleSize 11 -StartColumn 13
+
         $excel = Open-ExcelPackage -Path $path
         $ws = $excel.Workbook.Worksheets[1]
         it "Created 3 tables                                                                       " {
-            $ws.tables.count | Should be 3
+            $ws.tables.count | Should be 5
         }
         it "Created the FileSize table in the right place with the right size and style            " {
             $ws.Tables["FileSize"].Address.Address                      | Should     be "G2:H16" #Insert at row 2, Column 7, 14 rows x 2 columns of data
             $ws.Tables["FileSize"].StyleName                            | Should     be "TableStyleMedium2"
         }
         it "Created the ExtSize  table in the right place with the right size                      " {
-            $ws.Tables["ExtSize"].Address.Address                      | Should      be "A2:B14" #tile, then 12 rows x 2 columns of data
+            $ws.Tables["ExtSize"].Address.Address                       | Should     be "A2:B14" #tile, then 12 rows x 2 columns of data
         }
         it "Created the ExtCount table in the right place with the right size                      " {
             $ws.Tables["ExtCount"].Address.Address                      | Should     be "D2:E12" #title, then 10 rows x 2 columns of data
         }
+        it "Created the Table1 table in the right place with the right size                        " {
+            $ws.Tables["Table1"].Address.Address                        | Should     be "J2:K7" #title, then 5 rows x 2 columns of data
+        }
+        it "Created the Table2 table in the right place with the right size                        " {
+            $ws.Tables["Table2"].Address.Address                        | Should     be "M2:N9" #title, then 7 rows x 2 columns of data
+            $ws.Tables["Table2"].StyleName                              | Should     be "TableStyleMedium5"
+        }
     }
 
+    Context "                # DataTable" {
+        $path = "$Env:TEMP\test.xlsx"
+
+        $Date = Get-Date
+        $Time = [TimeSpan]::FromHours(16)
+        $DataTable = [Data.DataTable]::new('Test')
+        $null = $DataTable.Columns.Add('IDD', [Int32])
+        $null = $DataTable.Columns.Add('Name')
+        $null = $DataTable.Columns.Add('Junk')
+        $null = $DataTable.Columns.Add('IntT', [Int32])
+        $null = $DataTable.Columns.Add('Date', [DateTime])
+        $null = $DataTable.Columns.Add('Time', [TimeSpan])
+        $null = $DataTable.Rows.Add(1, 'A', 'AAA', 5, $Date, $Time)
+        $null = $DataTable.Rows.Add(3, '6', $null, $null, $null, $null)
+
+        Remove-Item -Path $path -ErrorAction SilentlyContinue
+        Export-Excel -Path $Path -TargetData $DataTable -Table -AutoSize
+
+        $excel = Open-ExcelPackage -Path $path
+        $ws = $excel.Workbook.Worksheets[1]
+
+        it 'Tables Name' {
+            $DataTable.TableName | Should -BeExactly 'Test'
+            $ws.Tables.Count | Should -BeExactly 1
+            $ws.Tables[0].Name | Should -BeExactly $DataTable.TableName
+        }
+
+        It 'String Values' {
+            $DataTable.Rows[0].Junk | Should -BeExactly 'AAA'
+            $ws.Cells[2, 3].Value | Should -BeExactly $DataTable.Rows[0].Junk
+        }
+        
+        It 'Int Values' {
+            $DataTable.Rows[0].IntT | Should -BeExactly 5
+            $ws.Cells[2, 4].Value | Should -BeExactly $DataTable.Rows[0].IntT
+            $ws.Cells[2, 4].Value | Should -BeOfType 'Double'
+        }
+
+        It 'DateTime Values' {
+            $DataTable.Rows[0].Date | Should -BeExactly $Date
+            $ws.Cells[2, 5].Value.ToString() | Should -BeExactly $DataTable.Rows[0].Date.ToString()
+            $ws.Cells[2, 5].Value | Should -BeOfType 'DateTime'
+        }
+
+        It 'Time Values' {
+            $DataTable.Rows[0].Time | Should -BeExactly $Time
+            $ws.Cells[2, 6].Value.TimeOfDay.ToString() | Should -BeExactly $DataTable.Rows[0].Time.ToString()
+            $ws.Cells[2, 6].Value.TimeOfDay | Should -BeOfType 'TimeSpan'
+        }
+
+        It 'Number in string' {
+            $DataTable.Rows[1].Name | Should -BeExactly '6'
+            $ws.Cells[3, 2].Value | Should -BeExactly $DataTable.Rows[1].Name
+            $ws.Cells[3, 2].Value | Should -BeOfType 'String'
+        }
+
+        It 'Null String' {
+            $DataTable.Rows[1].Junk | Should -BeOfType DBNull
+            $ws.Cells[3, 3].Value -eq $null | Should -Be $true
+        }
+
+        It 'Null Int' {
+            $DataTable.Rows[1].IntT | Should -BeOfType DBNull
+            $ws.Cells[3, 3].Value -eq $null | Should -Be $true
+        }
+
+        It 'No Extra Data' {
+            $DataTable.Rows.Count | Should -Be 2
+            $ws.Dimension.End.Row | Should -Be ($DataTable.Rows.Count + 1)
+            $ws.Tables[0].Address.Rows | Should -Be ($DataTable.Rows.Count + 1)
+
+            $DataTable.Columns.Count | Should -Be 6
+            $ws.Dimension.End.Column | Should -Be $DataTable.Columns.Count
+            $ws.Tables[0].Address.Columns | Should -Be $DataTable.Columns.Count
+        }
+
+        It 'Additional Table' {
+            $DataTable2 = $DataTable.Copy()
+            $DataTable2.TableName = 'Test2'
+            Export-Excel -Path $Path -TargetData $DataTable2 -Table -WorkSheetname WorkSheet2
+        }
+
+        Remove-Item -Path $path -ErrorAction SilentlyContinue             
+        Export-Excel -Path $Path -TargetData $DataTable -TableName NewName -TableStyle 'Medium5'
+
+        $excel = Open-ExcelPackage -Path $path
+        $ws = $Excel.Workbook.WorkSheets[1]
+
+        it 'Overwrite TableName' {
+            $DataTable.TableName | Should -BeExactly 'Test'
+            $ws.Tables.Count | Should -BeExactly 1
+            $ws.Tables[0].Name | Should -BeExactly 'NewName'
+        }
+
+        it 'TableStyle' {
+            $ws.Tables[0].StyleName | Should -be "TableStyleMedium5"
+        }
+
+        Remove-Item -Path $path -ErrorAction SilentlyContinue               
+        Export-Excel -Path $Path -TargetData $DataTable
+
+        $excel = Open-ExcelPackage -Path $path
+        $ws = $Excel.Workbook.WorkSheets[1]
+
+        it 'No Table' {
+            $ws.Tables.Count | Should -BeExactly 0
+        }
+
+        It 'DateTime' {
+            $DataTable.Rows[0].Date | Should -BeExactly $Date
+            $ws.Cells[2, 5].Value.ToString() | Should -BeExactly $DataTable.Rows[0].Date.ToString()
+            $ws.Cells[2, 5].Value | Should -BeOfType 'DateTime'
+        }
+        It 'Time' {
+            $DataTable.Rows[0].Date | Should -BeExactly $Date
+            $ws.Cells[2, 6].Value.TimeOfDay.ToString() | Should -BeExactly $DataTable.Rows[0].Time.ToString()
+            $ws.Cells[2, 6].Value.TimeOfDay | Should -BeOfType 'TimeSpan'
+        }
+    }
 }
