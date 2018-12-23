@@ -17,7 +17,7 @@ if (!$DontCreateZip) {
     Compress-Archive -Path . -DestinationPath .\$dest
 }
 
-if (((Get-Module -ListAvailable pester).Version -gt '4.0.0').Count -eq 0) {
+if (!((Get-Module -ListAvailable pester).Version -gt '4.0.0')) {
     Install-Module -Name Pester -Repository PSGallery -Force -Scope CurrentUser
 }
 
