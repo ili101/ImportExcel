@@ -987,6 +987,17 @@ Describe ExportExcel {
         }
     }
 
+    Context "                # Check params" {
+        $ExportExcelCommand = Get-Command Export-Excel
+        It 'Now support Table' {
+            $NowParameterSetName = $ExportExcelCommand.Parameters['Now'].ParameterSets.Keys
+            $NowParameterSet = $ExportExcelCommand.ParameterSets | Where-Object Name -EQ $NowParameterSetName
+            $NowParameterSet.Parameters.Name | Should -Contain 'Table'
+            $NowParameterSet.Parameters.Name | Should -Contain 'TableName'
+            $NowParameterSet.Parameters.Name | Should -Contain 'TableStyle'
+        }
+    }
+
     Context "                # DataTable" {
         $path = "$Env:TEMP\test.xlsx"
 
@@ -1095,15 +1106,36 @@ Describe ExportExcel {
             $ws.Tables.Count | Should -BeExactly 0
         }
 
-        It 'DateTime' {
+        It 'No Table DateTime' {
             $DataTable.Rows[0].Date | Should -BeExactly $Date
             $ws.Cells[2, 5].Value.ToString() | Should -BeExactly $DataTable.Rows[0].Date.ToString()
             $ws.Cells[2, 5].Value | Should -BeOfType 'DateTime'
         }
-        It 'Time' {
+        It 'No Table Time' {
             $DataTable.Rows[0].Date | Should -BeExactly $Date
             $ws.Cells[2, 6].Value.TimeOfDay.ToString() | Should -BeExactly $DataTable.Rows[0].Time.ToString()
             $ws.Cells[2, 6].Value.TimeOfDay | Should -BeOfType 'TimeSpan'
+        }
+
+        Remove-Item -Path $path -ErrorAction SilentlyContinue               
+        Export-Excel -Path $Path -TargetData $DataTable -Table -NoHeader
+
+        $excel = Open-ExcelPackage -Path $path
+        $ws = $Excel.Workbook.WorkSheets[1]
+
+        it 'Table NoHeader' {
+            $DataTable.TableName | Should -BeExactly 'Test'
+            $ws.Tables.Count | Should -BeExactly 1
+            $ws.Tables[0].Name | Should -BeExactly $DataTable.TableName
+            $ws.Cells[1, 1].Value | Should -Be 1
+            $ws.Cells[2, 1].Value | Should -Be 3
+        }
+
+        Remove-Item -Path $path -ErrorAction SilentlyContinue               
+        $DataTable | Export-Excel -Path $Path -WarningVariable warnvar -WarningAction SilentlyContinue
+
+        it 'Warn when passing DataRow' {
+            $warnvar | Should -Be 'You are passing DataRows to Export-Excel, consider passing DataTable for better performance and compatibility'
         }
     }
 }

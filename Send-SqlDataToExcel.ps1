@@ -272,24 +272,9 @@
         Write-Verbose -Message "Query returned $rowCount row(s)"
     }
     if ($DataTable.Rows.Count) {
-        #ExportExcel user a -NoHeader parameter so that's what we use here, but needs to be the other way around.
-        $printHeaders    = -not $NoHeader
-        if ($Title)  {$r = $StartRow +1 }
-        else         {$r = $StartRow}
-        #Get our Excel sheet and fill it with the data
-        $excelPackage    = Export-Excel -Path $Path -WorkSheetname $WorkSheetname  -PassThru
-        $excelPackage.Workbook.Worksheets[$WorkSheetname].Cells[$r,$StartColumn].LoadFromDataTable($dataTable, $printHeaders )  | Out-Null
-
-        #Apply date format
-        for ($c=0 ; $c -lt $DataTable.Columns.Count ; $c++) {
-            if ($DataTable.Columns[$c].DataType -eq [datetime]) {
-                Set-ExcelColumn -Worksheet $excelPackage.Workbook.Worksheets[$WorkSheetname] -Column ($c +1) -NumberFormat 'Date-Time'
-            }
-        }
-
         #Call export-excel with any parameters which don't relate to the SQL query
-        "Connection", "Database" , "Session", "MsSQLserver", "Destination" , "SQL" , "DataTable", "Path" | ForEach-Object {$null = $PSBoundParameters.Remove($_) }
-        Export-Excel -ExcelPackage $excelPackage   @PSBoundParameters
+        "Connection", "Database" , "Session", "MsSQLserver", "Destination" , "SQL" , "DataTable" | ForEach-Object {$null = $PSBoundParameters.Remove($_) }
+        Export-Excel -TargetData $DataTable @PSBoundParameters
     }
     else {Write-Warning -Message "No Data to insert."}
     #If we were passed a connection and opened a session,  close that session.

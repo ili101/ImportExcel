@@ -733,39 +733,19 @@
         if ($PSBoundParameters.ContainsKey("TargetData")) {
             try {
                 if ($TargetData -is [Data.DataTable]) {
-                    if ($pkg.Workbook.Styles.NamedStyles.Name -notcontains 'DateTimeStyle') {
-                        $DateTimeStyle = $pkg.Workbook.Styles.CreateNamedStyle('DateTimeStyle')
-                        $DateTimeStyle.Style.Numberformat.Format = 'm/d/yy h:mm'
-                    }
-                    if ($pkg.Workbook.Styles.NamedStyles.Name -notcontains 'TimeStyle') {
-                        $DateTimeStyle = $pkg.Workbook.Styles.CreateNamedStyle('TimeStyle')
-                        $DateTimeStyle.Style.Numberformat.Format = '[h]:mm:ss'
-                    }
                     if ($Table) {
-                        $ExcelRange = $ws.Cells[$Row, $StartColumn].LoadFromDataTable($TargetData, $true, $TableStyle)
-                        $tbl = $ws.Tables.GetFromRange($ExcelRange)
-
-                        foreach ($Column in $TargetData.Columns) {
-                            if ($Column.DataType.Name -eq 'DateTime') {
-                                $tbl.Columns[$Column.ColumnName].DataCellStyleName = 'DateTimeStyle'
-                            }
-                            elseif ($Column.DataType.Name -eq 'TimeSpan') {
-                                $tbl.Columns[$Column.ColumnName].DataCellStyleName = 'TimeStyle'
-                            }
-                        }
+                        $ExcelRange = $ws.Cells[$Row, $StartColumn].LoadFromDataTable($TargetData, !$NoHeader, $TableStyle)
                     }
                     else {
                         $ExcelRange = $ws.Cells[$Row, $StartColumn].LoadFromDataTable($TargetData, $true)
-
-                        foreach ($Column in $TargetData.Columns) {
-                            if ($Column.DataType.Name -eq 'DateTime') {
-                                $ColumnIndex = $ExcelRange.Start.Column + $TargetData.Columns.IndexOf($Column)
-                                $ws.Cells[($ExcelRange.Start.Row + 1), $ColumnIndex, $ExcelRange.End.Row, $ColumnIndex].StyleName = 'DateTimeStyle'
-                            }
-                            elseif ($Column.DataType.Name -eq 'TimeSpan') {
-                                $ColumnIndex = $ExcelRange.Start.Column + $TargetData.Columns.IndexOf($Column)
-                                $ws.Cells[($ExcelRange.Start.Row + 1), $ColumnIndex, $ExcelRange.End.Row, $ColumnIndex].StyleName = 'TimeStyle'
-                            }
+                    }
+                    foreach ($Column in $TargetData.Columns) {
+                        $ColumnIndex = $ExcelRange.Start.Column + $TargetData.Columns.IndexOf($Column)
+                        if ($Column.DataType -eq [DateTime]) {
+                            Set-ExcelColumn -Worksheet $ws -Column $ColumnIndex -NumberFormat 'Date-Time' -StartRow $ExcelRange.Start.Row
+                        }
+                        elseif ($Column.DataType.Name -eq [TimeSpan]) {
+                            Set-ExcelColumn -Worksheet $ws -Column $ColumnIndex -NumberFormat 'Long Time' -StartRow $ExcelRange.Start.Row
                         }
                     }
                 }
@@ -775,6 +755,7 @@
                         $isDataTypeValueType = ($null -eq $TargetData) -or ($TargetData.GetType().name -match 'string|timespan|datetime|bool|byte|char|decimal|double|float|int|long|sbyte|short|uint|ulong|ushort|URI|ExcelHyperLink')
                         if ($isDataTypeValueType -and -not $Append) {$row -= 1} #row incremented before adding values, so it is set to the number of rows inserted at the end
                         if ($null -ne  $TargetData) {Write-Debug "DataTypeName is '$($TargetData.GetType().name)' isDataTypeValueType '$isDataTypeValueType'" }
+                        if ($TargetData -is [Data.DataRow]) {Write-Warning 'You are passing DataRows to Export-Excel, consider passing DataTable for better performance and compatibility'}
                     }
                     if ($isDataTypeValueType) {
                         $ColumnIndex = $StartColumn
