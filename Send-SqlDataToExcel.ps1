@@ -169,78 +169,130 @@
 
         This example uses an Existing ODBC datasource name "LR" which maps to an adobe lightroom database and gets a list of collection names into a worksheet
     #>
-    [CmdletBinding()]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword","")]
+    [CmdletBinding(DefaultParameterSetName = 'Default')]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
      param (
-        [Parameter(ParameterSetName="SQLConnection", Mandatory=$true)]
-        [Parameter(ParameterSetName="ODBCConnection",Mandatory=$true)]
+        [Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'ODBCConnection', Mandatory = $true)]
         $Connection,
-        [Parameter(ParameterSetName="ExistingSession",Mandatory=$true)]
+        [Parameter(ParameterSetName = 'ExistingSession', Mandatory = $true)]
         [System.Data.Common.DbConnection]$Session,
-        [Parameter(ParameterSetName="SQLConnection",Mandatory=$true)]
+        [Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
         [switch]$MsSQLserver,
-        [Parameter(ParameterSetName="SQLConnection")]
+        [Parameter(ParameterSetName = 'SQLConnection')]
         [String]$DataBase,
-        [Parameter(ParameterSetName="SQLConnection", Mandatory=$true)]
-        [Parameter(ParameterSetName="ODBCConnection",Mandatory=$true)]
-        [Parameter(ParameterSetName="ExistingSession",Mandatory=$true)]
+        [Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'ExistingSession', Mandatory = $true)]
         [string]$SQL,
+        [Parameter(ParameterSetName = 'SQLConnection')]
+        [Parameter(ParameterSetName = 'ODBCConnection')]
+        [Parameter(ParameterSetName = 'ExistingSession')]
         [int]$QueryTimeout,
-        [Parameter(ParameterSetName="Pre-FetchedData",Mandatory=$true)]
+        [Parameter(ParameterSetName = 'PreFetchedData', Mandatory = $true)]
         [System.Data.DataTable]$DataTable,
-        $Path,
-        [String]$WorkSheetname = 'Sheet1',
-        [Switch]$KillExcel,
+
+        [Parameter(ParameterSetName = 'Default', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter', Position = 0)]
+        [String]$Path,
+        [Parameter(ParameterSetName = 'Package', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter', Mandatory = $true)]
+        [OfficeOpenXml.ExcelPackage]$ExcelPackage,
+        [Switch]$Calculate,
         [Switch]$Show,
+        [String]$WorksheetName = 'Sheet1',
+        [String]$Password,
+        [switch]$ClearSheet,
+        [switch]$Append,
         [String]$Title,
-        [OfficeOpenXml.Style.ExcelFillStyle]$TitleFillPattern = 'None',
+        [OfficeOpenXml.Style.ExcelFillStyle]$TitleFillPattern = 'Solid',
         [Switch]$TitleBold,
         [Int]$TitleSize = 22,
         $TitleBackgroundColor,
-        [String]$Password,
-        [Hashtable]$PivotTableDefinition,
         [Switch]$IncludePivotTable,
+        [String]$PivotTableName,
         [String[]]$PivotRows,
         [String[]]$PivotColumns,
         $PivotData,
         [String[]]$PivotFilter,
         [Switch]$PivotDataToColumn,
-        [Switch]$NoTotalsInPivot,
+        [Hashtable]$PivotTableDefinition,
         [Switch]$IncludePivotChart,
         [OfficeOpenXml.Drawing.Chart.eChartType]$ChartType = 'Pie',
         [Switch]$NoLegend,
         [Switch]$ShowCategory,
         [Switch]$ShowPercent,
         [Switch]$AutoSize,
+        [Int]$AutoSizeFirst,
+        [Switch]$NoClobber,
         [Switch]$FreezeTopRow,
         [Switch]$FreezeFirstColumn,
         [Switch]$FreezeTopRowFirstColumn,
         [Int[]]$FreezePane,
+        [Parameter(ParameterSetName = 'Default-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
         [Switch]$AutoFilter,
         [Switch]$BoldTopRow,
         [Switch]$NoHeader,
+        [ValidateScript( {
+                if (-not $_) {  throw 'RangeName is null or empty.' }
+                elseif ($_[0] -notmatch '[a-z]') { throw 'RangeName starts with an invalid character.' }
+                else { $true }
+            })]
         [String]$RangeName,
+        [ValidateScript( {
+                if (-not $_) {  throw 'Tablename is null or empty.' }
+                elseif ($_[0] -notmatch '[a-z]') { throw 'Tablename starts with an invalid character.' }
+                else { $true }
+            })]
+        [Parameter(ParameterSetName = 'Default', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Now')]
         [String]$TableName,
+        [Parameter(ParameterSetName = 'Default')]
+        [Parameter(ParameterSetName = 'Package')]
+        [Parameter(ParameterSetName = 'Now')]
+        [Switch]$Table,
+        [Parameter(ParameterSetName = 'Default')]
+        [Parameter(ParameterSetName = 'Package')]
+        [Parameter(ParameterSetName = 'Now')]
         [OfficeOpenXml.Table.TableStyles]$TableStyle = 'Medium6',
         [Switch]$Barchart,
         [Switch]$PieChart,
         [Switch]$LineChart ,
         [Switch]$ColumnChart ,
         [Object[]]$ExcelChartDefinition,
+        [String[]]$HideSheet,
+        [String[]]$UnHideSheet,
+        [Switch]$MoveToStart,
+        [Switch]$MoveToEnd,
+        $MoveBefore ,
+        $MoveAfter ,
+        [Switch]$KillExcel,
         [Switch]$AutoNameRange,
+        [Int]$StartRow = 1,
+        [Int]$StartColumn = 1,
+        [Switch]$PassThru,
+        [String]$Numberformat = 'General',
+        [string[]]$ExcludeProperty,
+        [Switch]$NoAliasOrScriptPropeties,
+        [Switch]$DisplayPropertySet,
+        [String[]]$NoNumberConversion,
         [Object[]]$ConditionalFormat,
         [Object[]]$ConditionalText,
         [ScriptBlock]$CellStyleSB,
-        [Int]$StartRow    = 1,
-        [Int]$StartColumn = 1,
+        #If there is already content in the workbook the sheet with the PivotTable will not be active UNLESS Activate is specified
+        [switch]$Activate,
+        [Parameter(ParameterSetName = 'Now')]
+        [Switch]$Now,
         [Switch]$ReturnRange,
-        [Switch]$Passthru
+        #By default PivotTables have Totals for each Row (on the right) and for each column at the bottom. This allows just one or neither to be selected.
+        [ValidateSet('Both', 'Columns', 'Rows', 'None')]
+        [String]$PivotTotals = 'Both',
+        #Included for compatibility - equivalent to -PivotTotals "None"
+        [Switch]$NoTotalsInPivot,
+        [Switch]$ReZip
     )
-
-    if ($KillExcel) {
-            Get-Process excel -ErrorAction Ignore | Stop-Process
-            while (Get-Process excel -ErrorAction Ignore) {Start-Sleep -Milliseconds 250}
-    }
 
     #We were either given a session object or a connection string (with, optionally a MSSQLServer parameter)
     # If we got -MSSQLServer, create a SQL connection, if we didn't but we got -Connection create an ODBC connection
@@ -254,6 +306,9 @@
             $Session     = New-Object -TypeName System.Data.Odbc.OdbcConnection      -ArgumentList $Connection ; $Session.ConnectionTimeout = 30
     }
 
+    If ($session) {
+        #A session was either passed in or just created. If it's a SQL one make a SQL DataAdapter, otherwise make an ODBC one
+        if ($Session.GetType().name -match "SqlConnection") {
     If ($session) {
         #A session was either passed in or just created. If it's a SQL one make a SQL DataAdapter, otherwise make an ODBC one
         if ($Session.GetType().name -match "SqlConnection") {

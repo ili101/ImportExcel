@@ -418,16 +418,16 @@
     #>
     [CmdletBinding(DefaultParameterSetName = 'Default')]
     [OutputType([OfficeOpenXml.ExcelPackage])]
-    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingPlainTextForPassword", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
     Param(
-        [Parameter(ParameterSetName = "Default", Position = 0)]
-        [Parameter(ParameterSetName = "AutoFilter"  , Position = 0)]
-        [String]$Path,
-        [Parameter(Mandatory = $true, ParameterSetName = "PackageDefault")]
-        [Parameter(Mandatory = $true, ParameterSetName = "PackageAutoFilter")]
-        [OfficeOpenXml.ExcelPackage]$ExcelPackage,
         [Parameter(ValueFromPipeline = $true)]
         $TargetData,
+        [Parameter(ParameterSetName = 'Default', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter', Position = 0)]
+        [String]$Path,
+        [Parameter(ParameterSetName = 'Package', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter', Mandatory = $true)]
+        [OfficeOpenXml.ExcelPackage]$ExcelPackage,
         [Switch]$Calculate,
         [Switch]$Show,
         [String]$WorksheetName = 'Sheet1',
@@ -459,32 +459,32 @@
         [Switch]$FreezeFirstColumn,
         [Switch]$FreezeTopRowFirstColumn,
         [Int[]]$FreezePane,
-        [Parameter(Mandatory = $true, ParameterSetName = 'AutoFilter', ValueFromPipelineByPropertyName)]
-        [Parameter(Mandatory = $true, ParameterSetName = 'PackageAutoFilter', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
         [Switch]$AutoFilter,
         [Switch]$BoldTopRow,
         [Switch]$NoHeader,
         [ValidateScript( {
-                if (-not $_) {  throw 'RangeName is null or empty.'  }
-                elseif ($_[0] -notmatch '[a-z]') { throw 'RangeName starts with an invalid character.'  }
+                if (-not $_) {  throw 'RangeName is null or empty.' }
+                elseif ($_[0] -notmatch '[a-z]') { throw 'RangeName starts with an invalid character.' }
                 else { $true }
             })]
         [String]$RangeName,
         [ValidateScript( {
-                if (-not $_) {  throw 'Tablename is null or empty.'  }
-                elseif ($_[0] -notmatch '[a-z]') { throw 'Tablename starts with an invalid character.'  }
+                if (-not $_) {  throw 'Tablename is null or empty.' }
+                elseif ($_[0] -notmatch '[a-z]') { throw 'Tablename starts with an invalid character.' }
                 else { $true }
             })]
         [Parameter(ParameterSetName = 'Default', ValueFromPipelineByPropertyName)]
-        [Parameter(ParameterSetName = 'PackageDefault', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package', ValueFromPipelineByPropertyName)]
         [Parameter(ParameterSetName = 'Now')]
         [String]$TableName,
         [Parameter(ParameterSetName = 'Default')]
-        [Parameter(ParameterSetName = 'PackageDefault')]
+        [Parameter(ParameterSetName = 'Package')]
         [Parameter(ParameterSetName = 'Now')]
         [Switch]$Table,
         [Parameter(ParameterSetName = 'Default')]
-        [Parameter(ParameterSetName = 'PackageDefault')]
+        [Parameter(ParameterSetName = 'Package')]
         [Parameter(ParameterSetName = 'Now')]
         [OfficeOpenXml.Table.TableStyles]$TableStyle = 'Medium6',
         [Switch]$Barchart,
@@ -517,8 +517,8 @@
         [Switch]$Now,
         [Switch]$ReturnRange,
         #By default PivotTables have Totals for each Row (on the right) and for each column at the bottom. This allows just one or neither to be selected.
-        [ValidateSet("Both","Columns","Rows","None")]
-        [String]$PivotTotals = "Both",
+        [ValidateSet('Both', 'Columns', 'Rows', 'None')]
+        [String]$PivotTotals = 'Both',
         #Included for compatibility - equivalent to -PivotTotals "None"
         [Switch]$NoTotalsInPivot,
         [Switch]$ReZip
