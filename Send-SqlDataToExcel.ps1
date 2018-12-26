@@ -169,34 +169,110 @@
 
         This example uses an Existing ODBC datasource name "LR" which maps to an adobe lightroom database and gets a list of collection names into a worksheet
     #>
-    [CmdletBinding(DefaultParameterSetName = 'Default')]
+    [CmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSAvoidUsingPlainTextForPassword', '')]
      param (
-        [Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'ODBCConnection', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Now-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Now-ODBCConnection', Mandatory = $true)]
         $Connection,
-        [Parameter(ParameterSetName = 'ExistingSession', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Now-ExistingSession', Mandatory = $true)]
         [System.Data.Common.DbConnection]$Session,
-        [Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-SQLConnection')]
+        [Parameter(ParameterSetName = 'Now-SQLConnection')]
         [switch]$MsSQLserver,
-        [Parameter(ParameterSetName = 'SQLConnection')]
+        #[Parameter(ParameterSetName = 'SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-SQLConnection')]
+        [Parameter(ParameterSetName = 'Now-SQLConnection')]
         [String]$DataBase,
-        [Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'ODBCConnection', Mandatory = $true)]
-        [Parameter(ParameterSetName = 'ExistingSession', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'SQLConnection', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'ODBCConnection', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Now-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Now-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Now-ExistingSession', Mandatory = $true)]
         [string]$SQL,
-        [Parameter(ParameterSetName = 'SQLConnection')]
-        [Parameter(ParameterSetName = 'ODBCConnection')]
-        [Parameter(ParameterSetName = 'ExistingSession')]
+        #[Parameter(ParameterSetName = 'SQLConnection')]
+        #[Parameter(ParameterSetName = 'ODBCConnection')]
+        #[Parameter(ParameterSetName = 'ExistingSession')]
+        [Parameter(ParameterSetName = 'Default-SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-SQLConnection')]
+        [Parameter(ParameterSetName = 'Now-SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Package-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Now-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Default-ExistingSession')]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ExistingSession')]
+        [Parameter(ParameterSetName = 'Package-ExistingSession')]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ExistingSession')]
+        [Parameter(ParameterSetName = 'Now-ExistingSession')]
         [int]$QueryTimeout,
-        [Parameter(ParameterSetName = 'PreFetchedData', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'PreFetchedData', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-PreFetchedData', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-PreFetchedData', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-PreFetchedData', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-PreFetchedData', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Now-PreFetchedData', Mandatory = $true)]
         [System.Data.DataTable]$DataTable,
 
-        [Parameter(ParameterSetName = 'Default', Position = 0)]
-        [Parameter(ParameterSetName = 'Default-AutoFilter', Position = 0)]
+        #[Parameter(ParameterSetName = 'Default', Position = 0)]
+        #[Parameter(ParameterSetName = 'Default-AutoFilter', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-SQLConnection', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-ODBCConnection', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-ExistingSession', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-PreFetchedData', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-SQLConnection', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ODBCConnection', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ExistingSession', Position = 0)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-PreFetchedData', Position = 0)]
         [String]$Path,
-        [Parameter(ParameterSetName = 'Package', Mandatory = $true)]
+        #[Parameter(ParameterSetName = 'Package', Mandatory = $true)]
         [Parameter(ParameterSetName = 'Package-AutoFilter', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-PreFetchedData', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-SQLConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ODBCConnection', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ExistingSession', Mandatory = $true)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-PreFetchedData', Mandatory = $true)]
         [OfficeOpenXml.ExcelPackage]$ExcelPackage,
         [Switch]$Calculate,
         [Switch]$Show,
@@ -229,8 +305,16 @@
         [Switch]$FreezeFirstColumn,
         [Switch]$FreezeTopRowFirstColumn,
         [Int[]]$FreezePane,
-        [Parameter(ParameterSetName = 'Default-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
-        [Parameter(ParameterSetName = 'Package-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        #[Parameter(ParameterSetName = 'Default-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        #[Parameter(ParameterSetName = 'Package-AutoFilter', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-SQLConnection', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ODBCConnection', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-ExistingSession', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-AutoFilter-PreFetchedData', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-SQLConnection', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ODBCConnection', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-ExistingSession', Mandatory = $true, ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-AutoFilter-PreFetchedData', Mandatory = $true, ValueFromPipelineByPropertyName)]
         [Switch]$AutoFilter,
         [Switch]$BoldTopRow,
         [Switch]$NoHeader,
@@ -245,17 +329,53 @@
                 elseif ($_[0] -notmatch '[a-z]') { throw 'Tablename starts with an invalid character.' }
                 else { $true }
             })]
-        [Parameter(ParameterSetName = 'Default', ValueFromPipelineByPropertyName)]
-        [Parameter(ParameterSetName = 'Package', ValueFromPipelineByPropertyName)]
-        [Parameter(ParameterSetName = 'Now')]
+        #[Parameter(ParameterSetName = 'Default', ValueFromPipelineByPropertyName)]
+        #[Parameter(ParameterSetName = 'Package', ValueFromPipelineByPropertyName)]
+        #[Parameter(ParameterSetName = 'Now', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-SQLConnection', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-ODBCConnection', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-ExistingSession', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Default-PreFetchedData', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-SQLConnection', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-ODBCConnection', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-ExistingSession', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Package-PreFetchedData', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Now-SQLConnection', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Now-ODBCConnection', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Now-ExistingSession', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName = 'Now-PreFetchedData', ValueFromPipelineByPropertyName)]
         [String]$TableName,
-        [Parameter(ParameterSetName = 'Default')]
-        [Parameter(ParameterSetName = 'Package')]
-        [Parameter(ParameterSetName = 'Now')]
+        #[Parameter(ParameterSetName = 'Default')]
+        #[Parameter(ParameterSetName = 'Package')]
+        #[Parameter(ParameterSetName = 'Now')]
+        [Parameter(ParameterSetName = 'Default-SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Default-ExistingSession')]
+        [Parameter(ParameterSetName = 'Default-PreFetchedData')]
+        [Parameter(ParameterSetName = 'Package-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Package-ExistingSession')]
+        [Parameter(ParameterSetName = 'Package-PreFetchedData')]
+        [Parameter(ParameterSetName = 'Now-SQLConnection')]
+        [Parameter(ParameterSetName = 'Now-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Now-ExistingSession')]
+        [Parameter(ParameterSetName = 'Now-PreFetchedData')]
         [Switch]$Table,
-        [Parameter(ParameterSetName = 'Default')]
-        [Parameter(ParameterSetName = 'Package')]
-        [Parameter(ParameterSetName = 'Now')]
+        #[Parameter(ParameterSetName = 'Default')]
+        #[Parameter(ParameterSetName = 'Package')]
+        #[Parameter(ParameterSetName = 'Now')]
+        [Parameter(ParameterSetName = 'Default-SQLConnection')]
+        [Parameter(ParameterSetName = 'Default-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Default-ExistingSession')]
+        [Parameter(ParameterSetName = 'Default-PreFetchedData')]
+        [Parameter(ParameterSetName = 'Package-SQLConnection')]
+        [Parameter(ParameterSetName = 'Package-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Package-ExistingSession')]
+        [Parameter(ParameterSetName = 'Package-PreFetchedData')]
+        [Parameter(ParameterSetName = 'Now-SQLConnection')]
+        [Parameter(ParameterSetName = 'Now-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Now-ExistingSession')]
+        [Parameter(ParameterSetName = 'Now-PreFetchedData')]
         [OfficeOpenXml.Table.TableStyles]$TableStyle = 'Medium6',
         [Switch]$Barchart,
         [Switch]$PieChart,
@@ -283,7 +403,11 @@
         [ScriptBlock]$CellStyleSB,
         #If there is already content in the workbook the sheet with the PivotTable will not be active UNLESS Activate is specified
         [switch]$Activate,
-        [Parameter(ParameterSetName = 'Now')]
+        #[Parameter(ParameterSetName = 'Now')]
+        [Parameter(ParameterSetName = 'Now-SQLConnection')]
+        [Parameter(ParameterSetName = 'Now-ODBCConnection')]
+        [Parameter(ParameterSetName = 'Now-ExistingSession')]
+        [Parameter(ParameterSetName = 'Now-PreFetchedData')]
         [Switch]$Now,
         [Switch]$ReturnRange,
         #By default PivotTables have Totals for each Row (on the right) and for each column at the bottom. This allows just one or neither to be selected.
@@ -309,9 +433,6 @@
     If ($session) {
         #A session was either passed in or just created. If it's a SQL one make a SQL DataAdapter, otherwise make an ODBC one
         if ($Session.GetType().name -match "SqlConnection") {
-    If ($session) {
-        #A session was either passed in or just created. If it's a SQL one make a SQL DataAdapter, otherwise make an ODBC one
-        if ($Session.GetType().name -match "SqlConnection") {
             $dataAdapter = New-Object -TypeName System.Data.SqlClient.SqlDataAdapter -ArgumentList (
                            New-Object -TypeName System.Data.SqlClient.SqlCommand     -ArgumentList $SQL, $Session)
         }
@@ -328,7 +449,7 @@
     }
     if ($DataTable.Rows.Count) {
         #Call export-excel with any parameters which don't relate to the SQL query
-        "Connection", "Database" , "Session", "MsSQLserver", "Destination" , "SQL" , "DataTable" | ForEach-Object {$null = $PSBoundParameters.Remove($_) }
+        "Connection", "Session", "MsSQLserver", "Database", "SQL", "QueryTimeout", "DataTable" | ForEach-Object {$null = $PSBoundParameters.Remove($_) }
         Export-Excel -TargetData $DataTable @PSBoundParameters
     }
     else {Write-Warning -Message "No Data to insert."}

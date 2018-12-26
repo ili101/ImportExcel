@@ -477,7 +477,7 @@
             })]
         [Parameter(ParameterSetName = 'Default', ValueFromPipelineByPropertyName)]
         [Parameter(ParameterSetName = 'Package', ValueFromPipelineByPropertyName)]
-        [Parameter(ParameterSetName = 'Now')]
+        [Parameter(ParameterSetName = 'Now', ValueFromPipelineByPropertyName)]
         [String]$TableName,
         [Parameter(ParameterSetName = 'Default')]
         [Parameter(ParameterSetName = 'Package')]
